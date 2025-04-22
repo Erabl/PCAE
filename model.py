@@ -15,8 +15,9 @@ class PointCloudAE(nn.Module):
         self.latent_size = latent_size
         self.point_size = point_size
         
-        self.conv1 = torch.nn.Conv1d(3, 64, 1)
+        self.conv1 = torch.nn.Conv1d(2, 64, 1)
         self.conv2 = torch.nn.Conv1d(64, 128, 1)
+        
         self.conv3 = torch.nn.Conv1d(128, self.latent_size, 1)
         self.bn1 = nn.BatchNorm1d(64)
         self.bn2 = nn.BatchNorm1d(128)
@@ -24,7 +25,7 @@ class PointCloudAE(nn.Module):
         
         self.dec1 = nn.Linear(self.latent_size,256)
         self.dec2 = nn.Linear(256,256)
-        self.dec3 = nn.Linear(256,self.point_size*3)
+        self.dec3 = nn.Linear(256,self.point_size*2)
 
     def encoder(self, x): 
         x = F.relu(self.bn1(self.conv1(x)))
@@ -38,7 +39,7 @@ class PointCloudAE(nn.Module):
         x = F.relu(self.dec1(x))
         x = F.relu(self.dec2(x))
         x = self.dec3(x)
-        return x.view(-1, self.point_size, 3)
+        return x.view(-1, self.point_size, 2)
     
     def forward(self, x):
         x = self.encoder(x)

@@ -7,7 +7,6 @@ class ReadDataset(Dataset):
      
         self.data = torch.from_numpy(source).float()
 
-
     def __len__(self):
         return len(self.data)
 
@@ -18,14 +17,19 @@ def RandomSplit(datasets, train_set_percentage):
     lengths = [int(len(datasets)*train_set_percentage), len(datasets)-int(len(datasets)*train_set_percentage)]
     return random_split(datasets, lengths)
 
-def GetDataLoaders(npArray, batch_size, train_set_percentage = 0.9, shuffle=True, num_workers=0, pin_memory=True):
-    
+def GetDataLoaders(npArray, batch_size, train_set_percentage = None, shuffle=True, num_workers=0, pin_memory=True):
     
     pc = ReadDataset(npArray)
 
-    train_set, test_set = RandomSplit(pc, train_set_percentage)
-
-    train_loader = DataLoader(train_set, shuffle=shuffle, num_workers=num_workers, batch_size=batch_size, pin_memory=pin_memory)
-    test_loader = DataLoader(test_set, shuffle=shuffle, num_workers=num_workers, batch_size=batch_size, pin_memory=pin_memory)
+    if train_set_percentage is not None:
+        
+        train_set, test_set = RandomSplit(pc, train_set_percentage)
+        train_loader = DataLoader(train_set, shuffle=shuffle, num_workers=num_workers, batch_size=batch_size, pin_memory=pin_memory)
+        test_loader = DataLoader(test_set, shuffle=shuffle, num_workers=num_workers, batch_size=batch_size, pin_memory=pin_memory)
     
+    else:
+
+        train_loader = DataLoader(pc, shuffle=shuffle, num_workers=num_workers, batch_size=batch_size, pin_memory=pin_memory)
+        return train_loader
+
     return train_loader, test_loader
