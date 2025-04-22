@@ -8,6 +8,8 @@ import datetime
 from sklearn.decomposition import PCA
 import matplotlib.colors as mcolors
 from torch_geometric.data import Data, Dataset
+from torch_geometric.loader import DataLoader
+
 
 
 class PointCloudDataset(Dataset):
@@ -310,5 +312,20 @@ def evaluate_model(model, loaders):
         title="Latent Space Visualization",
         class_names= ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
     )
+
+def get_datasets(batch_size=1):
+
+    train_pc = torch.load("data/preprocessed_train_point_cloud.pt", weights_only=False)
+    val_pc = torch.load("data/preprocessed_val_point_cloud.pt", weights_only=False)
+    test_pc = torch.load("data/preprocessed_test_point_cloud.pt", weights_only=False)
+
+    merged_pc = test_pc + val_pc
+
+    test_pc = merged_pc
+
+    train_loader = DataLoader(train_pc, shuffle=True, num_workers=0, batch_size=batch_size, pin_memory=True)
+    test_loader = DataLoader(test_pc, shuffle=True, num_workers=0, batch_size=batch_size, pin_memory=True)
+    
+    return train_loader, test_loader
 
 ###################################################################
