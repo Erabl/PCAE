@@ -16,10 +16,10 @@ import datetime
 def objective(trial):
     # --- Sample hyperparameters ---
     lr = trial.suggest_float("lr", 1e-5, 1e-2, log=True)
-    latent_dim = trial.suggest_int("latent_dim", 8, 256, step=8)
+    latent_dim = trial.suggest_int("latent_dim", 8, 64, step=8)
     hidden_dim = trial.suggest_int("hidden_dim", 128, 512, step=128)
     weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-2, log=True)
-    batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
+    #batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
     batch_size = 1
 
     # --- Instantiate the model ---    
@@ -68,7 +68,7 @@ def objective(trial):
     return trainer.callback_metrics["val_loss"].item()
 
 study = optuna.create_study(direction="minimize")
-study.optimize(objective, n_trials=20)
+study.optimize(objective, n_trials=1000)
 print("Best trial:", study.best_trial.params)
 
 # Visualize results

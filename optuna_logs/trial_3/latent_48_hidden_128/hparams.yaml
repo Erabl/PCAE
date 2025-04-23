@@ -1,0 +1,6 @@
+point_size: 1024
+latent_dim: 48
+hidden_dim: 128
+lr: 0.00018021523259488303
+save_results: false
+output_folder: output/

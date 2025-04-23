@@ -11,7 +11,6 @@ from torch_geometric.data import Data, Dataset
 from torch_geometric.loader import DataLoader
 
 
-
 class PointCloudDataset(Dataset):
     def __init__(self, preprocessed_data):
         self.data = preprocessed_data
@@ -264,7 +263,8 @@ def evaluate_dataset(model, loader, dataset_name):
     counter = 0
     print(f"\nProcessing {dataset_name} set:")
     with torch.no_grad():
-        for batch in loader:            
+        for batch in loader:  
+            #print(batch.pos.shape)          
             # Get the latent representation for the entire batch
             z = model.encode(batch)
             latent_representations.append(z)  # Assuming z[0] has shape [batch_size, latent_dim]
@@ -298,20 +298,43 @@ def evaluate_model(model, loaders):
     train_labels = torch.full((train_samples.shape[0],), 0) if train_labels is None else train_labels
     test_labels = torch.full((test_samples.shape[0],), 2) if test_labels is None else test_labels
 
+
     print("train labels: ", train_labels.shape)
     print("test labels: ", test_labels.shape)
-    all_labels = torch.cat([train_labels, test_labels], dim=0)
 
+    #    all_labels = torch.cat([train_labels, test_labels], dim=0)
+    device = torch.device("mps")
+    all_labels = torch.cat([
+        train_labels.to(device),
+        test_labels.to(device)
+    ], dim=0)
+    
     print(all_samples.shape)
     print(all_labels.shape)
+    class_names = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
 
     #Visualize all datasets together
     visualize_latent_space_pca(
         all_samples.cpu(),
         all_labels.cpu(),
         title="Latent Space Visualization",
-        class_names= ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+        class_names = class_names
     )
+
+    class_dict = {index: 0 for index in class_names}
+
+    counter = 0
+    for batch in train_loader:
+        output = model(batch.pos, batch.edge_index)
+        label = class_names[batch.y]
+        class_dict[label]+=1
+        plot_pointcloud_comparison(batch.pos.cpu(), output.cpu(), save=True, name=f"plots/recons/train_set_plot_{label}_nr{class_dict[label]+1}")
+    
+    for batch in test_loader:
+        output = model(batch.pos, batch.edge_index)
+        label = "CHECK"
+        counter+=1
+        plot_pointcloud_comparison(batch.pos.cpu(), output.cpu(), save=True, name=f"plots/recons/test_set_plot_{label}_nr{counter}")
 
 def get_datasets(batch_size=1):
 
